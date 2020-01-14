@@ -62,3 +62,21 @@ func GetOAuthResponseContext(ctx context.Context, client httpClient, clientID, c
 	}
 	return response, response.Err()
 }
+
+func GetOAuthV2Response(client httpClient, clientID, clientSecret, code, redirectURI string) (resp *OAuthResponse, err error) {
+	return GetOAuthV2ResponseContext(context.Background(), client, clientID, clientSecret, code, redirectURI)
+}
+
+func GetOAuthV2ResponseContext(ctx context.Context, client httpClient, clientID, clientSecret, code, redirectURI string) (resp *OAuthResponse, err error) {
+	values := url.Values{
+		"client_id":     {clientID},
+		"client_secret": {clientSecret},
+		"code":          {code},
+		"redirect_uri":  {redirectURI},
+	}
+	response := &OAuthResponse{}
+	if err = postForm(ctx, client, APIURL+"oauth.v2.access", values, response, discard{}); err != nil {
+		return nil, err
+	}
+	return response, response.Err()
+}
