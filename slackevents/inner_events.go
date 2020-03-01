@@ -127,6 +127,22 @@ type PinAddedEvent pinEvent
 // PinRemovedEvent An item was unpinned from a channel - https://api.slack.com/events/pin_removed
 type PinRemovedEvent pinEvent
 
+// Both ReactionAddedEvent and ReactionRemovedEvent have this same underlying structure,
+// but this is not an Event Slack will ever send you itself
+type ReactionEvent struct {
+	Type           string      `json:"type"`
+	User           string      `json:"user"`
+	ItemUser       string      `json:"item_user"`
+	Item           Item        `json:"item"`
+	EventTimestamp json.Number `json:"event_ts"`
+}
+
+//ReactionAddedEvent A member has added an emoji reaction to an item - https://api.slack.com/events/reaction_added
+type ReactionAddedEvent ReactionEvent
+
+// ReactionRemovedEvent A member removed an emoji reaction - https://api.slack.com/events/reaction_removde
+type ReactionRemovedEvent ReactionEvent
+
 type tokens struct {
 	Oauth []string `json:"oauth"`
 	Bot   []string `json:"bot"`
@@ -260,6 +276,10 @@ const (
 	PinAdded = "pin_added"
 	// PinRemoved An item was unpinned from a channel
 	PinRemoved = "pin_removed"
+	// ReactionAdded A member has added an emoji reaction to an item
+	ReactionAdded = "reaction_added"
+	// ReactionRemoved A member removed an emoji reaction
+	ReactionRemoved = "reaction_removed"
 	// TokensRevoked APP's API tokes are revoked
 	TokensRevoked = "tokens_revoked"
 )
@@ -278,5 +298,7 @@ var EventsAPIInnerEventMapping = map[string]interface{}{
 	MemberJoinedChannel:   MemberJoinedChannelEvent{},
 	PinAdded:              PinAddedEvent{},
 	PinRemoved:            PinRemovedEvent{},
+	ReactionAdded:         ReactionAddedEvent{},
+	ReactionRemoved:       ReactionRemovedEvent{},
 	TokensRevoked:         TokensRevokedEvent{},
 }
