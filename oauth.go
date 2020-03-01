@@ -62,3 +62,53 @@ func GetOAuthResponseContext(ctx context.Context, client httpClient, clientID, c
 	}
 	return response, response.Err()
 }
+
+// OAuthV2ResponseTeam ...
+type OAuthV2ResponseTeam struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// OAuthV2ResponseEnterprise ...
+type OAuthV2ResponseEnterprise struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// OAuthV2ResponseAuthedUser ...
+type OAuthV2ResponseAuthedUser struct {
+	ID          string `json:"id"`
+	Scope       string `json:"scope"`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+}
+
+// OAuthV2Response ...
+type OAuthV2Response struct {
+	AccessToken string                    `json:"access_token"`
+	TokenType   string                    `json:"token_type"`
+	Scope       string                    `json:"scope"`
+	BotUserID   string                    `json:"bot_user_id"`
+	AppID       string                    `json:"app_id"`
+	Team        OAuthV2ResponseTeam       `json:"team"`
+	AuthedUser  OAuthV2ResponseAuthedUser `json:"authed_user"`
+	SlackResponse
+}
+
+func GetOAuthV2Response(client httpClient, clientID, clientSecret, code, redirectURI string) (resp *OAuthV2Response, err error) {
+	return GetOAuthV2ResponseContext(context.Background(), client, clientID, clientSecret, code, redirectURI)
+}
+
+func GetOAuthV2ResponseContext(ctx context.Context, client httpClient, clientID, clientSecret, code, redirectURI string) (resp *OAuthV2Response, err error) {
+	values := url.Values{
+		"client_id":     {clientID},
+		"client_secret": {clientSecret},
+		"code":          {code},
+		"redirect_uri":  {redirectURI},
+	}
+	response := &OAuthV2Response{}
+	if err = postForm(ctx, client, APIURL+"oauth.v2.access", values, response, discard{}); err != nil {
+		return nil, err
+	}
+	return response, response.Err()
+}
