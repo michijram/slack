@@ -132,6 +132,7 @@ type PinRemovedEvent pinEvent
 type ReactionEvent struct {
 	Type           string      `json:"type"`
 	User           string      `json:"user"`
+	Reaction       string      `json:"reaction"`
 	ItemUser       string      `json:"item_user"`
 	Item           Item        `json:"item"`
 	EventTimestamp json.Number `json:"event_ts"`
