@@ -112,7 +112,9 @@ type MemberJoinedChannelEvent struct {
 	Inviter     string `json:"inviter"`
 }
 
-type pinEvent struct {
+// Both PinAddedEvent and PinRemovedEvent have this same underlying structure,
+// but this is not an Event Slack will ever send you itself
+type PinEvent struct {
 	Type           string `json:"type"`
 	User           string `json:"user"`
 	Item           Item   `json:"item"`
@@ -121,7 +123,9 @@ type pinEvent struct {
 	HasPins        bool   `json:"has_pins,omitempty"`
 }
 
-type reactionEvent struct {
+// Both ReactionAddedEvent and ReactionRemovedEvent have this same underlying structure,
+// but this is not an Event Slack will ever send you itself
+type ReactionEvent struct {
 	Type           string `json:"type"`
 	User           string `json:"user"`
 	Reaction       string `json:"reaction"`
@@ -131,16 +135,16 @@ type reactionEvent struct {
 }
 
 // ReactionAddedEvent An reaction was added to a message - https://api.slack.com/events/reaction_added
-type ReactionAddedEvent reactionEvent
+type ReactionAddedEvent ReactionEvent
 
 // ReactionRemovedEvent An reaction was removed from a message - https://api.slack.com/events/reaction_removed
-type ReactionRemovedEvent reactionEvent
+type ReactionRemovedEvent ReactionEvent
 
 // PinAddedEvent An item was pinned to a channel - https://api.slack.com/events/pin_added
-type PinAddedEvent pinEvent
+type PinAddedEvent PinEvent
 
 // PinRemovedEvent An item was unpinned from a channel - https://api.slack.com/events/pin_removed
-type PinRemovedEvent pinEvent
+type PinRemovedEvent PinEvent
 
 type tokens struct {
 	Oauth []string `json:"oauth"`
