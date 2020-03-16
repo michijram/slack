@@ -140,9 +140,14 @@ type updateViewRequest struct {
 	ViewID     string           `json:"view_id,omitempty"`
 }
 
+type ViewResponseMetadata struct {
+	Messages []string `json:"messages"`
+}
+
 type ViewResponse struct {
 	SlackResponse
-	View `json:"view"`
+	ResponseMetadata ViewResponseMetadata `json:"response_metadata"`
+	View             `json:"view"`
 }
 
 // OpenView opens a view for a user.
