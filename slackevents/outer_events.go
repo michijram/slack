@@ -14,6 +14,8 @@ type EventsAPIEvent struct {
 	APIAppID   string `json:"api_app_id"`
 	Data       interface{}
 	InnerEvent EventsAPIInnerEvent
+	EventID    string `json:"event_id"`
+	EventTime  int    `json:"event_time"`
 }
 
 // EventsAPIURLVerificationEvent received when configuring a EventsAPI driven app
