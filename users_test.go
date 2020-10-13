@@ -76,6 +76,13 @@ func getTestUser() User {
 	return getTestUserWithId("UXXXXXXXX")
 }
 
+func getTestUsers() []User {
+	return []User{
+		getTestUserWithId("UYYYYYYYY"),
+		getTestUserWithId("UZZZZZZZZ"),
+	}
+}
+
 func getUserIdentity(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 	response := []byte(`{
@@ -116,6 +123,18 @@ func getUserInfo(rw http.ResponseWriter, r *http.Request) {
 	}{
 		Ok:   true,
 		User: getTestUser(),
+	})
+	rw.Write(response)
+}
+
+func getUsersInfo(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+	response, _ := json.Marshal(struct {
+		Ok    bool   `json:"ok"`
+		Users []User `json:"users"`
+	}{
+		Ok:    true,
+		Users: getTestUsers(),
 	})
 	rw.Write(response)
 }
@@ -248,6 +267,24 @@ func TestGetUserInfo(t *testing.T) {
 	}
 }
 
+func TestGetUsersInfo(t *testing.T) {
+	http.DefaultServeMux = new(http.ServeMux)
+	http.HandleFunc("/users.info", getUsersInfo)
+	expectedUsers := getTestUsers()
+
+	once.Do(startServer)
+	api := New("testing-token", OptionAPIURL("http://"+serverAddr+"/"))
+
+	user, err := api.GetUsersInfo("UYYYYYYYY", "UZZZZZZZZ")
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+		return
+	}
+	if !reflect.DeepEqual(expectedUsers, *user) {
+		t.Fatal(ErrIncorrectResponse)
+	}
+}
+
 func TestGetUserByEmail(t *testing.T) {
 	http.HandleFunc("/users.lookupByEmail", getUserByEmail)
 	expectedUser := getTestUser()
@@ -265,7 +302,7 @@ func TestGetUserByEmail(t *testing.T) {
 	}
 }
 
-func TestUserCustomStatus(t *testing.T) {
+func TestUserProfileSet(t *testing.T) {
 	up := &UserProfile{}
 
 	setUserProfile := newProfileHandler(up)
@@ -280,6 +317,22 @@ func TestUserCustomStatus(t *testing.T) {
 
 	up.RealName = "Test User"
 	testSetUserCustomStatusWithUser(api, "Test User", up, t)
+
+	up.RealName = "Real Name Test"
+	testSetUserRealName(api, up, t)
+}
+
+func testSetUserRealName(api *Client, up *UserProfile, t *testing.T) {
+	const (
+		realName = "Real Name Test"
+	)
+	if err := api.SetUserRealName(realName); err != nil {
+		t.Fatalf(`SetUserRealName(%q) = %#v, want <nil>`, realName, err)
+	}
+
+	if up.RealName != realName {
+		t.Fatalf(`UserProfile.RealName = %q, want %q`, up.RealName, realName)
+	}
 }
 
 func testSetUserCustomStatus(api *Client, up *UserProfile, t *testing.T) {

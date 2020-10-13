@@ -14,7 +14,10 @@ func TestAppMention(t *testing.T) {
 				"ts": "1515449522.000016",
 				"thread_ts": "1515449522.000016",
 				"channel": "C0LAN2Q65",
-				"event_ts": "1515449522000016"
+				"event_ts": "1515449522000016",
+				"source_team": "T3MQV36V7",
+				"user_team": "T3MQV36V7",
+				"blah": "test"
 		}
 	`)
 	err := json.Unmarshal(rawE, &AppMentionEvent{})
@@ -76,6 +79,7 @@ func TestLinkSharedEvent(t *testing.T) {
 				"channel": "Cxxxxxx",
 				"user": "Uxxxxxxx",
 				"message_ts": "123456789.9875",
+				"thread_ts": "123456789.9876",
 				"links":
 						[
 								{
@@ -102,6 +106,7 @@ func TestLinkSharedEvent(t *testing.T) {
 func TestMessageEvent(t *testing.T) {
 	rawE := []byte(`
 			{
+				"client_msg_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
 				"type": "message",
 				"channel": "G024BE91L",
 				"user": "U2147483697",
@@ -109,6 +114,8 @@ func TestMessageEvent(t *testing.T) {
 				"ts": "1355517523.000005",
 				"event_ts": "1355517523.000005",
 				"channel_type": "channel",
+				"source_team": "T3MQV36V7",
+				"user_team": "T3MQV36V7",
 				"message": {
 					"text": "To infinity and beyond.",
 					"edited": {
@@ -140,6 +147,87 @@ func TestBotMessageEvent(t *testing.T) {
 		}
 	`)
 	err := json.Unmarshal(rawE, &MessageEvent{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestThreadBroadcastEvent(t *testing.T) {
+	rawE := []byte(`
+			{
+				"type": "message",
+				"subtype": "thread_broadcast",
+				"channel": "G024BE91L",
+				"user": "U2147483697",
+				"text": "Live long and prospect.",
+				"ts": "1355517523.000005",
+				"event_ts": "1355517523.000005",
+				"channel_type": "channel",
+				"source_team": "T3MQV36V7",
+				"user_team": "T3MQV36V7",
+				"message": {
+					"text": "To infinity and beyond.",
+					"root": {
+						"text": "To infinity and beyond.",
+						"ts": "1355517523.000005"
+					},
+					"edited": {
+						"user": "U2147483697",
+						"ts": "1355517524.000000"
+					}
+				},
+				"previous_message": {
+					"text": "Live long and prospect."
+				}
+		}
+	`)
+
+	var me MessageEvent
+	if err := json.Unmarshal(rawE, &me); err != nil {
+		t.Error(err)
+	}
+
+	if me.Root != nil {
+		t.Error("me.Root should be nil")
+	}
+
+	if me.Message.Root == nil {
+		t.Fatal("me.Message.Root is nil")
+	}
+
+	if me.Message.Root.TimeStamp != "1355517523.000005" {
+		t.Errorf("me.Message.Root.TimeStamp = %q, want %q", me.Root.TimeStamp, "1355517523.000005")
+	}
+}
+
+func TestMemberJoinedChannelEvent(t *testing.T) {
+	rawE := []byte(`
+			{
+				"type": "member_joined_channel",
+				"user": "W06GH7XHN",
+				"channel": "C0698JE0H",
+				"channel_type": "C",
+				"team": "T024BE7LD",
+				"inviter": "U123456789"
+		}
+	`)
+	err := json.Unmarshal(rawE, &MemberJoinedChannelEvent{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestMemberLeftChannelEvent(t *testing.T) {
+	rawE := []byte(`
+			{
+				"type": "member_left_channel",
+				"user": "W06GH7XHN",
+				"channel": "C0698JE0H",
+				"channel_type": "C",
+				"team": "T024BE7LD"
+		}
+	`)
+	err := json.Unmarshal(rawE, &MemberLeftChannelEvent{})
 	if err != nil {
 		t.Error(err)
 	}

@@ -23,6 +23,13 @@ type AppMentionEvent struct {
 	ThreadTimeStamp string      `json:"thread_ts"`
 	Channel         string      `json:"channel"`
 	EventTimeStamp  json.Number `json:"event_ts"`
+
+	// When Message comes from a channel that is shared between workspaces
+	UserTeam   string `json:"user_team,omitempty"`
+	SourceTeam string `json:"source_team,omitempty"`
+
+	// BotID is filled out when a bot triggers the app_mention event
+	BotID string `json:"bot_id,omitempty"`
 }
 
 // AppHomeOpenedEvent Your Slack app home was opened.
@@ -59,6 +66,7 @@ type LinkSharedEvent struct {
 	TimeStamp        string        `json:"ts"`
 	Channel          string        `json:"channel"`
 	MessageTimeStamp json.Number   `json:"message_ts"`
+	ThreadTimeStamp  string        `json:"thread_ts"`
 	Links            []sharedLinks `json:"links"`
 }
 
@@ -76,6 +84,7 @@ type sharedLinks struct {
 // TODO: Improve this so that it is not required to manually parse ChannelType
 type MessageEvent struct {
 	// Basic Message Event - https://api.slack.com/events/message
+	ClientMsgID     string      `json:"client_msg_id"`
 	Type            string      `json:"type"`
 	User            string      `json:"user"`
 	Text            string      `json:"text"`
@@ -84,6 +93,10 @@ type MessageEvent struct {
 	Channel         string      `json:"channel"`
 	ChannelType     string      `json:"channel_type"`
 	EventTimeStamp  json.Number `json:"event_ts"`
+
+	// When Message comes from a channel that is shared between workspaces
+	UserTeam   string `json:"user_team,omitempty"`
+	SourceTeam string `json:"source_team,omitempty"`
 
 	// Edited Message
 	Message         *MessageEvent `json:"message,omitempty"`
@@ -100,9 +113,16 @@ type MessageEvent struct {
 
 	Upload bool   `json:"upload"`
 	Files  []File `json:"files"`
+
+	Attachments []slack.Attachment `json:"attachments,omitempty"`
+
+	// Root is the message that was broadcast to the channel when the SubType is
+	// thread_broadcast. If this is not a thread_broadcast message event, this
+	// value is nil.
+	Root *MessageEvent `json:"root"`
 }
 
-// MemberJoinedChannelEvent A member join a channel
+// MemberJoinedChannelEvent A member joined a public or private channel
 type MemberJoinedChannelEvent struct {
 	Type        string `json:"type"`
 	User        string `json:"user"`
@@ -110,6 +130,15 @@ type MemberJoinedChannelEvent struct {
 	ChannelType string `json:"channel_type"`
 	Team        string `json:"team"`
 	Inviter     string `json:"inviter"`
+}
+
+// MemberLeftChannelEvent A member left a public or private channel
+type MemberLeftChannelEvent struct {
+	Type        string `json:"type"`
+	User        string `json:"user"`
+	Channel     string `json:"channel"`
+	ChannelType string `json:"channel_type"`
+	Team        string `json:"team"`
 }
 
 // Both PinAddedEvent and PinRemovedEvent have this same underlying structure,
@@ -275,6 +304,8 @@ const (
 	Message = "message"
 	// Member Joined Channel
 	MemberJoinedChannel = "member_joined_channel"
+	// Member Left Channel
+	MemberLeftChannel = "member_left_channel"
 	// PinAdded An item was pinned to a channel
 	PinAdded = "pin_added"
 	// PinRemoved An item was unpinned from a channel
@@ -299,6 +330,7 @@ var EventsAPIInnerEventMapping = map[string]interface{}{
 	LinkShared:            LinkSharedEvent{},
 	Message:               MessageEvent{},
 	MemberJoinedChannel:   MemberJoinedChannelEvent{},
+	MemberLeftChannel:     MemberLeftChannelEvent{},
 	PinAdded:              PinAddedEvent{},
 	PinRemoved:            PinRemovedEvent{},
 	ReactionAdded:         ReactionAddedEvent{},
