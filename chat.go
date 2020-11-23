@@ -301,7 +301,9 @@ func (t sendConfig) BuildRequest(token, channelID string) (req *http.Request, _ 
 			deleteOriginal:  t.deleteOriginal,
 		}.BuildRequest()
 	default:
-		return formSender{endpoint: t.endpoint, values: t.values}.BuildRequest()
+		req := formSender{endpoint: t.endpoint, values: t.values}.BuildRequest()
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+		return req
 	}
 }
 
