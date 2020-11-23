@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -301,9 +302,9 @@ func (t sendConfig) BuildRequest(token, channelID string) (req *http.Request, _ 
 			deleteOriginal:  t.deleteOriginal,
 		}.BuildRequest()
 	default:
-		req := formSender{endpoint: t.endpoint, values: t.values}.BuildRequest()
+		req, p, err := formSender{endpoint: t.endpoint, values: t.values}.BuildRequest()
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-		return req
+		return req, p, err
 	}
 }
 
